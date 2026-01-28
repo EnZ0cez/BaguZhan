@@ -33,6 +33,36 @@
 - 变更以 OpenSpec 提案驱动
 - 合并前确保测试通过
 
+### 提交消息规范
+采用 Conventional Commits 格式：`<type>(<scope>): <subject>`
+
+**类型前缀：**
+- `feat`: 新功能 (feature)
+- `fix`: 修复 Bug
+- `docs`: 文档变更 (documentation)
+- `style`: 代码格式调整（不影响功能）
+- `refactor`: 重构（既非新功能也非 Bug 修复）
+- `perf`: 性能优化 (performance)
+- `test`: 测试相关
+- `chore`: 构建/工具/依赖更新
+- `ci`: CI/CD 配置变更
+
+**作用域示例：**
+- `client` / `flutter` / `dart`: 客户端代码
+- `server` / `bff` / `api`: 后端服务
+- `db` / `database`: 数据库/迁移
+- `ui`: 界面组件
+- `test`: 测试代码
+
+**示例：**
+```
+feat(client): 添加题目卡片的答题交互
+fix(server): 修复题目查询的参数验证
+docs(readme): 更新环境配置说明
+refactor(bff): 抽离公共题目查询逻辑
+test(integration): 添加完整答题流程的集成测试
+```
+
 ## 领域上下文
 - 目标用户：准备大厂面试的程序员
 - 题目范围：基础/进阶/底层架构，模拟真实追问
