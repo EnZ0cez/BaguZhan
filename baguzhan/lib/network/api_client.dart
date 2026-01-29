@@ -11,10 +11,13 @@ class ApiClient {
   Dio get dio => _dio;
 
   static Dio _createDio() {
-    const baseUrl = String.fromEnvironment(
-      'BFF_BASE_URL',
-      defaultValue: 'http://localhost:3000',
-    );
+    const definedBaseUrl = String.fromEnvironment('BFF_BASE_URL');
+    final baseUrl = definedBaseUrl.isNotEmpty
+        ? definedBaseUrl
+        : switch (defaultTargetPlatform) {
+            TargetPlatform.android => 'http://10.0.2.2:37123',
+            _ => 'http://localhost:37123',
+          };
 
     final dio = Dio(
       BaseOptions(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../data/models/question_model.dart';
+import 'duo_card.dart';
 
 class QuestionCard extends StatelessWidget {
   const QuestionCard({
@@ -13,20 +14,8 @@ class QuestionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return DuoCard(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppTheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.black, width: 2),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black,
-            offset: Offset(0, 4),
-            blurRadius: 0,
-          ),
-        ],
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -34,7 +23,10 @@ class QuestionCard extends StatelessWidget {
             children: [
               _Chip(text: question.topic, background: AppTheme.duoBlue),
               const SizedBox(width: 8),
-              _Chip(text: question.difficulty.toUpperCase(), background: AppTheme.duoGreen),
+              _Chip(
+                text: question.difficulty.toUpperCase(),
+                background: AppTheme.duoGreen,
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -67,16 +59,18 @@ class _Chip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final onColor =
+        background == AppTheme.borderGray ? AppTheme.textPrimary : Colors.white;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: background,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusChip),
       ),
       child: Text(
         text,
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Colors.black,
+              color: onColor,
               fontWeight: FontWeight.w700,
             ),
       ),

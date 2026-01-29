@@ -1,8 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../core/theme/app_theme.dart';
 
-class OptionCard extends StatelessWidget {
+enum _OptionVisualState {
+  normal,
+  selected,
+  correct,
+  incorrect,
+}
+
+class _OptionVisualStyle {
+  const _OptionVisualStyle({
+    required this.borderColor,
+    required this.backgroundColor,
+    required this.indexBackgroundColor,
+    required this.indexTextColor,
+  });
+
+  final Color borderColor;
+  final Color backgroundColor;
+  final Color indexBackgroundColor;
+  final Color indexTextColor;
+}
+
+class OptionCard extends StatefulWidget {
   const OptionCard({
     super.key,
     required this.indexLabel,
@@ -22,71 +44,93 @@ class OptionCard extends StatelessWidget {
   final bool isDisabled;
   final VoidCallback onTap;
 
-  Color _borderColor() {
-    if (isCorrect) {
-      return AppTheme.duoGreen;
+  @override
+  State<OptionCard> createState() => _OptionCardState();
+}
+
+class _OptionCardState extends State<OptionCard> {
+  bool _pressed = false;
+
+  static const _styles = <_OptionVisualState, _OptionVisualStyle>{
+    _OptionVisualState.normal: _OptionVisualStyle(
+      borderColor: AppTheme.borderGray,
+      backgroundColor: Colors.white,
+      indexBackgroundColor: Colors.white,
+      indexTextColor: AppTheme.textSecondary,
+    ),
+    _OptionVisualState.selected: _OptionVisualStyle(
+      borderColor: AppTheme.duoBlue,
+      backgroundColor: AppTheme.selectedBackground,
+      indexBackgroundColor: AppTheme.duoBlue,
+      indexTextColor: Colors.white,
+    ),
+    _OptionVisualState.correct: _OptionVisualStyle(
+      borderColor: AppTheme.duoGreen,
+      backgroundColor: AppTheme.correctBackground,
+      indexBackgroundColor: AppTheme.duoGreen,
+      indexTextColor: Colors.white,
+    ),
+    _OptionVisualState.incorrect: _OptionVisualStyle(
+      borderColor: AppTheme.duoRed,
+      backgroundColor: AppTheme.incorrectBackground,
+      indexBackgroundColor: AppTheme.duoRed,
+      indexTextColor: Colors.white,
+    ),
+  };
+
+  _OptionVisualState get _visualState {
+    if (widget.isCorrect) {
+      return _OptionVisualState.correct;
     }
-    if (isIncorrect) {
-      return AppTheme.duoRed;
+    if (widget.isIncorrect) {
+      return _OptionVisualState.incorrect;
     }
-    if (isSelected) {
-      return AppTheme.duoBlue;
+    if (widget.isSelected) {
+      return _OptionVisualState.selected;
     }
-    return AppTheme.borderGray;
+    return _OptionVisualState.normal;
   }
 
-  Color _backgroundColor() {
-    if (isCorrect) {
-      return const Color(0xFFE9F7DD);
+  void _setPressed(bool value) {
+    if (widget.isDisabled) {
+      return;
     }
-    if (isIncorrect) {
-      return const Color(0xFFFFE6E6);
+    if (_pressed == value) {
+      return;
     }
-    if (isSelected) {
-      return const Color(0xFFE8F5FE);
-    }
-    return Colors.white;
-  }
-
-  Color _indexBackgroundColor() {
-    if (isCorrect) {
-      return AppTheme.duoGreen;
-    }
-    if (isIncorrect) {
-      return AppTheme.duoRed;
-    }
-    if (isSelected) {
-      return AppTheme.duoBlue;
-    }
-    return Colors.white;
-  }
-
-  Color _indexTextColor() {
-    if (isCorrect || isIncorrect || isSelected) {
-      return Colors.white;
-    }
-    return AppTheme.textSecondary;
+    setState(() {
+      _pressed = value;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final style = _styles[_visualState]!;
+    final shadow = _pressed ? AppTheme.shadowPressed : AppTheme.shadowDown;
+    final translateY = _pressed ? 2.0 : 0.0;
+
     return GestureDetector(
-      onTap: isDisabled ? null : onTap,
+      onTap: widget.isDisabled
+          ? null
+          : () {
+              HapticFeedback.lightImpact();
+              widget.onTap();
+            },
+      onTapDown: (_) => _setPressed(true),
+      onTapUp: (_) => _setPressed(false),
+      onTapCancel: () => _setPressed(false),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
+        duration: AppTheme.durationPress,
+        curve: AppTheme.curvePress,
+        transform: Matrix4.translationValues(0, translateY, 0),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
-          color: _backgroundColor(),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: _borderColor(), width: 2),
-          boxShadow: [
-            BoxShadow(
-              color: AppTheme.borderGray,
-              offset: const Offset(0, 4),
-              blurRadius: 0,
-            ),
-          ],
+          color: style.backgroundColor,
+          borderRadius: BorderRadius.circular(AppTheme.radiusCard),
+          border:
+              Border.all(color: style.borderColor, width: AppTheme.borderWidth),
+          boxShadow: [shadow],
         ),
         child: Row(
           children: [
@@ -95,22 +139,25 @@ class OptionCard extends StatelessWidget {
               height: 36,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: _indexBackgroundColor(),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: _borderColor(), width: 2),
+                color: style.indexBackgroundColor,
+                borderRadius: BorderRadius.circular(AppTheme.radiusChip),
+                border: Border.all(
+                  color: style.borderColor,
+                  width: AppTheme.borderWidth,
+                ),
               ),
               child: Text(
-                indexLabel,
+                widget.indexLabel,
                 style: TextStyle(
                   fontWeight: FontWeight.w800,
-                  color: _indexTextColor(),
+                  color: style.indexTextColor,
                 ),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                text,
+                widget.text,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
             ),

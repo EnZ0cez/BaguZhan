@@ -23,14 +23,59 @@ class ProgressBar extends StatelessWidget {
           style: Theme.of(context).textTheme.bodySmall,
         ),
         const SizedBox(height: 8),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(999),
-          child: LinearProgressIndicator(
-            minHeight: 10,
-            value: progress,
-            backgroundColor: AppTheme.borderGray,
-            valueColor: const AlwaysStoppedAnimation(AppTheme.duoGreen),
-          ),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            return Container(
+              height: AppTheme.progressHeight,
+              decoration: BoxDecoration(
+                color: AppTheme.borderGray,
+                borderRadius: BorderRadius.circular(999),
+                boxShadow: const [AppTheme.shadowDown],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(999),
+                child: TweenAnimationBuilder<double>(
+                  tween: Tween<double>(begin: 0, end: progress),
+                  duration: AppTheme.durationProgress,
+                  curve: AppTheme.curveProgress,
+                  builder: (context, value, _) {
+                    final width = constraints.maxWidth * value;
+                    return Stack(
+                      children: [
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Container(
+                            width: width,
+                            decoration: const BoxDecoration(
+                              color: AppTheme.duoGreen,
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(999)),
+                            ),
+                          ),
+                        ),
+                        if (value > 0)
+                          Positioned(
+                            left: (width - AppTheme.progressHeight).clamp(
+                              0.0,
+                              constraints.maxWidth - AppTheme.progressHeight,
+                            ),
+                            top: 0,
+                            bottom: 0,
+                            child: Container(
+                              width: AppTheme.progressHeight,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.18),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            );
+          },
         ),
       ],
     );

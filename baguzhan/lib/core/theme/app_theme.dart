@@ -1,23 +1,60 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
+  // Colors
   static const Color duoGreen = Color(0xFF58CC02);
   static const Color duoBlue = Color(0xFF1CB0F6);
   static const Color duoRed = Color(0xFFFF4B4B);
   static const Color background = Color(0xFFFFFFFF);
   static const Color surface = Color(0xFFF7F7F7);
   static const Color borderGray = Color(0xFFE5E5E5);
+  static const Color shadowGray = Color(0xFFD0D0D0);
+  static const Color outlineStrong = Color(0xFF000000);
   static const Color textPrimary = Color(0xFF3C3C3C);
   static const Color textSecondary = Color(0xFF777777);
 
+  // Semantic backgrounds
+  static const Color correctBackground = Color(0xFFE9F7DD);
+  static const Color incorrectBackground = Color(0xFFFFE6E6);
+  static const Color selectedBackground = Color(0xFFE8F5FE);
+
+  // Dimensions
+  static const double borderWidth = 2;
+  static const double radiusCard = 16;
+  static const double radiusPanel = 24;
+  static const double radiusChip = 12;
+  static const double progressHeight = 12;
+
+  // Motion
+  static const Duration durationPress = Duration(milliseconds: 100);
+  static const Duration durationFast = Duration(milliseconds: 150);
+  static const Duration durationProgress = Duration(milliseconds: 500);
+  static const Duration durationPanel = Duration(milliseconds: 300);
+  static const Curve curvePress = Curves.easeInOut;
+  static const Curve curveProgress = Curves.easeOutQuart;
+  static const Curve curvePanel = Curves.easeOutCubic;
+
+  // Shadows (Duolingo-style hard shadow)
+  static const BoxShadow shadowDown = BoxShadow(
+    color: shadowGray,
+    offset: Offset(0, 4),
+    blurRadius: 0,
+  );
+
+  static const BoxShadow shadowPressed = BoxShadow(
+    color: shadowGray,
+    offset: Offset(0, 0),
+    blurRadius: 0,
+  );
+
   static ThemeData lightTheme = ThemeData(
+    useMaterial3: true,
     brightness: Brightness.light,
     colorScheme: const ColorScheme.light(
       primary: duoGreen,
       secondary: duoBlue,
       error: duoRed,
       surface: surface,
-      background: background,
     ),
     scaffoldBackgroundColor: background,
     textTheme: const TextTheme(
@@ -51,8 +88,8 @@ class AppTheme {
     cardTheme: CardThemeData(
       color: surface,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: borderGray, width: 2),
+        borderRadius: BorderRadius.circular(radiusCard),
+        side: const BorderSide(color: borderGray, width: borderWidth),
       ),
       elevation: 0,
     ),
@@ -62,7 +99,7 @@ class AppTheme {
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(radiusCard),
         ),
         textStyle: const TextStyle(
           fontWeight: FontWeight.w800,
