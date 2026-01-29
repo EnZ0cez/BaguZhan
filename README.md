@@ -59,7 +59,7 @@ npm run db:seed
 npm run dev
 ```
 
-服务运行在 `http://localhost:3000`
+服务默认运行在 `http://localhost:37123`（可通过环境变量 `PORT` 覆盖）
 
 ### Flutter 应用
 

@@ -19,7 +19,7 @@ Flutter 应用 MUST 使用 Dio 包替代基础的 http 包，利用其拦截器�
 **TDD 测试 Dio 配置**：
 ```dart
 test('Dio client has correct base options', () {
-  expect(dio.options.baseUrl, 'http://localhost:3000');
+  expect(dio.options.baseUrl, 'http://localhost:37123');
   expect(dio.options.connectTimeout.inMilliseconds, 5000);
   expect(dio.options.receiveTimeout.inMilliseconds, 10000);
 });
@@ -28,7 +28,7 @@ test('Dio client has correct base options', () {
 - **给定** Flutter 应用已启动
 - **当** 创建 Dio 实例
 - **那么** 应配置以下属性：
-  - `baseUrl`: BFF 服务地址（开发环境 `http://localhost:3000`）
+  - `baseUrl`: BFF 服务地址（开发环境 `http://localhost:37123`）
   - `connectTimeout`: 5 秒
   - `receiveTimeout`: 10 秒
   - 添加日志拦截器（仅开发环境）
@@ -419,4 +419,3 @@ testWidgets('complete question flow from home to result', (tester) async {
 - **当** 测试从加载题目到查看结果的完整流程
 - **那么** 每个步骤都使用 Mock 数据
 - **并且** 测试不依赖外部服务
-
