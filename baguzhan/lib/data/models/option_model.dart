@@ -19,4 +19,13 @@ class OptionModel {
       isCorrect: json['isCorrect'] as bool,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'optionText': optionText,
+      'optionOrder': optionOrder,
+      'isCorrect': isCorrect,
+    };
+  }
 }

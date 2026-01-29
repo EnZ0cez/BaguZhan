@@ -8,8 +8,11 @@ import { QuestionController } from './controllers/QuestionController';
 import { errorHandler } from './middlewares/errorHandler';
 import { createHealthRouter } from './routes/health';
 import { createQuestionRouter } from './routes/questions';
+import { createUserProgressRouter } from './routes/userProgress';
 import { QuestionRepository } from './repositories/QuestionRepository';
 import { QuestionService } from './services/QuestionService';
+import { UserProgressRepository } from './repositories/UserProgressRepository';
+import { UserProgressService } from './services/UserProgressService';
 
 export const createApp = (db?: DbClient) => {
   const app = express();
@@ -20,12 +23,16 @@ export const createApp = (db?: DbClient) => {
   const questionController = new QuestionController(questionService);
   const healthController = new HealthController();
 
+  const userProgressRepository = new UserProgressRepository(database);
+  const userProgressService = new UserProgressService(userProgressRepository);
+
   app.use(cors());
   app.use(express.json());
   app.use(morgan('dev'));
 
   app.use('/health', createHealthRouter(healthController));
   app.use('/questions', createQuestionRouter(questionController));
+  app.use('/api', createUserProgressRouter(userProgressService));
 
   app.use((_req, res) => {
     res.status(404).json({

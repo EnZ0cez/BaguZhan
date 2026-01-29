@@ -3,14 +3,19 @@ import 'package:flutter/foundation.dart';
 import '../../data/models/question_model.dart';
 import '../../data/models/user_answer_model.dart';
 import '../../data/repositories/question_repository.dart';
+import '../../data/repositories/user_progress_repository.dart';
 import '../../network/api_exception.dart';
 
 enum QuestionState { initial, loading, loaded, error }
 
 class QuestionProvider extends ChangeNotifier {
-  QuestionProvider(this.repository);
+  QuestionProvider(
+    this.repository, {
+    UserProgressRepository? userProgressRepository,
+  }) : _userProgressRepository = userProgressRepository;
 
   final QuestionRepository repository;
+  final UserProgressRepository? _userProgressRepository;
 
   QuestionState _state = QuestionState.initial;
   String? _errorMessage;
@@ -25,12 +30,18 @@ class QuestionProvider extends ChangeNotifier {
   String? lastTopic;
   final List<UserAnswerModel> answers = [];
   DateTime? _questionStartTime;
+  String? _userId;
+
+  void setUserId(String userId) {
+    _userId = userId;
+  }
 
   QuestionState get state => _state;
 
   bool get isLoading => _state == QuestionState.loading;
 
-  String? get errorMessage => _state == QuestionState.error ? _errorMessage : null;
+  String? get errorMessage =>
+      _state == QuestionState.error ? _errorMessage : null;
 
   QuestionModel? get currentQuestion =>
       questions.isNotEmpty ? questions[currentIndex] : null;
@@ -94,8 +105,41 @@ class QuestionProvider extends ChangeNotifier {
         duration: duration,
       ),
     );
+
+    // Record answer to server if repository is available
+    _recordAnswer(
+      questionId: currentQuestion!.id,
+      selectedOptionId: currentQuestion!.options[selectedOptionIndex!].id,
+      isCorrect: lastIsCorrect ?? false,
+      answerTimeMs: duration.inMilliseconds,
+    );
+
     isAnswered = true;
     notifyListeners();
+  }
+
+  Future<void> _recordAnswer({
+    required String questionId,
+    required String selectedOptionId,
+    required bool isCorrect,
+    required int answerTimeMs,
+  }) async {
+    if (_userProgressRepository == null || _userId == null) {
+      return;
+    }
+
+    try {
+      await _userProgressRepository!.recordAnswer(
+        userId: _userId!,
+        questionId: questionId,
+        selectedOptionId: selectedOptionId,
+        isCorrect: isCorrect,
+        answerTimeMs: answerTimeMs,
+      );
+    } catch (e) {
+      // Silently fail - answer is still recorded locally
+      debugPrint('Failed to record answer: $e');
+    }
   }
 
   void nextQuestion() {

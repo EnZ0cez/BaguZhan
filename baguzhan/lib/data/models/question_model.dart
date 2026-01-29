@@ -44,4 +44,18 @@ class QuestionModel {
     final index = options.indexWhere((option) => option.isCorrect);
     return index >= 0 ? index : -1;
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'content': content,
+      'topic': topic,
+      'difficulty': difficulty,
+      'explanation': explanation,
+      'mnemonic': mnemonic,
+      'scenario': scenario,
+      'tags': tags,
+      'options': options.map((o) => o.toJson()).toList(),
+    };
+  }
 }

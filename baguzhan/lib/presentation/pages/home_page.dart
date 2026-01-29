@@ -39,6 +39,29 @@ class _HomePageState extends State<HomePage>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Row(
+              children: [
+                Expanded(
+                  child: _QuickActionButton(
+                    icon: Icons.book,
+                    label: '错题本',
+                    color: Colors.orange,
+                    onTap: () => Navigator.pushNamed(context, '/wrong-book'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _QuickActionButton(
+                    icon: Icons.bar_chart,
+                    label: '学习报告',
+                    color: Colors.green,
+                    onTap: () =>
+                        Navigator.pushNamed(context, '/learning-report'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
             Text('选择主题', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 16),
             Expanded(
@@ -85,6 +108,44 @@ class _HomePageState extends State<HomePage>
                     ),
                   );
                 },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _QuickActionButton extends StatelessWidget {
+  const _QuickActionButton({
+    required this.icon,
+    required this.label,
+    required this.color,
+    this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: DuoCard(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+        child: Column(
+          children: [
+            Icon(icon, color: color, size: 32),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey[800],
               ),
             ),
           ],
