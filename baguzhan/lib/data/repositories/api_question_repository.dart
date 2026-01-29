@@ -23,7 +23,8 @@ class ApiQuestionRepository implements QuestionRepository {
         '/questions',
         queryParameters: {
           if (topic != null && topic.isNotEmpty) 'topic': topic,
-          if (difficulty != null && difficulty.isNotEmpty) 'difficulty': difficulty,
+          if (difficulty != null && difficulty.isNotEmpty)
+            'difficulty': difficulty,
           if (limit != null) 'limit': limit,
           if (offset != null) 'offset': offset,
         },
@@ -47,7 +48,8 @@ class ApiQuestionRepository implements QuestionRepository {
         '/questions/random',
         queryParameters: {
           if (topic != null && topic.isNotEmpty) 'topic': topic,
-          if (difficulty != null && difficulty.isNotEmpty) 'difficulty': difficulty,
+          if (difficulty != null && difficulty.isNotEmpty)
+            'difficulty': difficulty,
           if (count != null) 'count': count,
         },
       );
@@ -62,7 +64,8 @@ class ApiQuestionRepository implements QuestionRepository {
   @override
   Future<QuestionModel?> getQuestionById(String id) async {
     try {
-      final response = await _withRetry(() => _client.dio.get('/questions/$id'));
+      final response =
+          await _withRetry(() => _client.dio.get('/questions/$id'));
       return QuestionModel.fromJson(response.data as Map<String, dynamic>);
     } on ApiException catch (error) {
       if (error.statusCode == 404) {
@@ -80,7 +83,7 @@ class ApiQuestionRepository implements QuestionRepository {
       return await request();
     } on DioException catch (error) {
       if (_shouldRetry(error) && retries > 0) {
-        await Future.delayed(const Duration(milliseconds: 300));
+        await Future<void>.delayed(const Duration(milliseconds: 300));
         return _withRetry(request, retries: retries - 1);
       }
       throw _normalizeError(error);
