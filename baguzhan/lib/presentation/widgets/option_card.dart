@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../core/theme/app_theme.dart';
 
-class OptionCard extends StatelessWidget {
+class OptionCard extends StatefulWidget {
   const OptionCard({
     super.key,
     required this.indexLabel,
@@ -22,71 +23,98 @@ class OptionCard extends StatelessWidget {
   final bool isDisabled;
   final VoidCallback onTap;
 
+  @override
+  State<OptionCard> createState() => _OptionCardState();
+}
+
+class _OptionCardState extends State<OptionCard> {
+  bool _pressed = false;
+
   Color _borderColor() {
-    if (isCorrect) {
+    if (widget.isCorrect) {
       return AppTheme.duoGreen;
     }
-    if (isIncorrect) {
+    if (widget.isIncorrect) {
       return AppTheme.duoRed;
     }
-    if (isSelected) {
+    if (widget.isSelected) {
       return AppTheme.duoBlue;
     }
     return AppTheme.borderGray;
   }
 
   Color _backgroundColor() {
-    if (isCorrect) {
-      return const Color(0xFFE9F7DD);
+    if (widget.isCorrect) {
+      return AppTheme.correctBackground;
     }
-    if (isIncorrect) {
-      return const Color(0xFFFFE6E6);
+    if (widget.isIncorrect) {
+      return AppTheme.incorrectBackground;
     }
-    if (isSelected) {
-      return const Color(0xFFE8F5FE);
+    if (widget.isSelected) {
+      return AppTheme.selectedBackground;
     }
     return Colors.white;
   }
 
   Color _indexBackgroundColor() {
-    if (isCorrect) {
+    if (widget.isCorrect) {
       return AppTheme.duoGreen;
     }
-    if (isIncorrect) {
+    if (widget.isIncorrect) {
       return AppTheme.duoRed;
     }
-    if (isSelected) {
+    if (widget.isSelected) {
       return AppTheme.duoBlue;
     }
     return Colors.white;
   }
 
   Color _indexTextColor() {
-    if (isCorrect || isIncorrect || isSelected) {
+    if (widget.isCorrect || widget.isIncorrect || widget.isSelected) {
       return Colors.white;
     }
     return AppTheme.textSecondary;
   }
 
+  void _setPressed(bool value) {
+    if (widget.isDisabled) {
+      return;
+    }
+    if (_pressed == value) {
+      return;
+    }
+    setState(() {
+      _pressed = value;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final shadow = _pressed ? AppTheme.shadowPressed : AppTheme.shadowDown;
+    final translateY = _pressed ? 2.0 : 0.0;
+
     return GestureDetector(
-      onTap: isDisabled ? null : onTap,
+      onTap: widget.isDisabled
+          ? null
+          : () {
+              HapticFeedback.lightImpact();
+              widget.onTap();
+            },
+      onTapDown: (_) => _setPressed(true),
+      onTapUp: (_) => _setPressed(false),
+      onTapCancel: () => _setPressed(false),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
+        duration: AppTheme.durationPress,
+        curve: AppTheme.curvePress,
+        transform: Matrix4.translationValues(0, translateY, 0),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
           color: _backgroundColor(),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: _borderColor(), width: 2),
-          boxShadow: [
-            BoxShadow(
-              color: AppTheme.borderGray,
-              offset: const Offset(0, 4),
-              blurRadius: 0,
-            ),
-          ],
+          borderRadius: BorderRadius.circular(AppTheme.radiusCard),
+          border:
+              Border.all(color: _borderColor(), width: AppTheme.borderWidth),
+          boxShadow: [shadow],
         ),
         child: Row(
           children: [
@@ -96,11 +124,14 @@ class OptionCard extends StatelessWidget {
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: _indexBackgroundColor(),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: _borderColor(), width: 2),
+                borderRadius: BorderRadius.circular(AppTheme.radiusChip),
+                border: Border.all(
+                  color: _borderColor(),
+                  width: AppTheme.borderWidth,
+                ),
               ),
               child: Text(
-                indexLabel,
+                widget.indexLabel,
                 style: TextStyle(
                   fontWeight: FontWeight.w800,
                   color: _indexTextColor(),
@@ -110,7 +141,7 @@ class OptionCard extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                text,
+                widget.text,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
             ),
