@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+// Re-export Neo-Brutal theme
+export 'neo_brutal_theme.dart';
+
 class AppTheme {
   // Base Colors
   static const Color duoGreen = Color(0xFF58CC02);
