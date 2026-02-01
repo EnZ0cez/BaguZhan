@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/theme/app_theme.dart';
+import '../../core/theme/neo_brutal_theme.dart';
 import '../providers/question_provider.dart';
 import '../widgets/feedback_panel.dart';
+import '../widgets/neo/neo_button.dart';
+import '../widgets/neo/neo_container.dart';
+import '../widgets/neo/neo_progress_ring.dart';
 import '../widgets/option_card.dart';
 import '../widgets/progress_bar.dart';
 import '../widgets/question_card.dart';
@@ -27,7 +31,7 @@ class _QuestionPageState extends State<QuestionPage>
     super.initState();
     _pulseController = AnimationController(
       vsync: this,
-      duration: AppTheme.durationPulse,
+      duration: const Duration(milliseconds: 800),
     )..forward();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -44,15 +48,16 @@ class _QuestionPageState extends State<QuestionPage>
     super.dispose();
   }
 
-  // 检测是否在测试环境中
-  static bool _isTestMode() {
-    return bool.fromEnvironment('dart.vm.product') == false;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.topic)),
+      backgroundColor: NeoBrutalTheme.background,
+      appBar: AppBar(
+        title: Text(widget.topic),
+        backgroundColor: NeoBrutalTheme.background,
+        foregroundColor: NeoBrutalTheme.charcoal,
+        elevation: 0,
+      ),
       body: Consumer<QuestionProvider>(
         builder: (context, provider, _) {
           if (provider.isLoading) {
@@ -96,14 +101,19 @@ class _QuestionPageState extends State<QuestionPage>
                       20,
                     ),
                     children: [
+                      // 进度条
                       ProgressBar(
                         currentIndex: provider.currentIndex,
                         total: provider.questions.length,
                         streak: provider.currentStreak,
                       ),
                       const SizedBox(height: 16),
+
+                      // 题目卡片
                       QuestionCard(question: question),
                       const SizedBox(height: 16),
+
+                      // 选项卡片
                       ...List.generate(question.options.length, (index) {
                         final option = question.options[index];
                         final selected = provider.selectedOptionIndex == index;
@@ -113,63 +123,38 @@ class _QuestionPageState extends State<QuestionPage>
                         final isIncorrect = provider.isAnswered &&
                             selected &&
                             index != correctIndex;
-                        return OptionCard(
-                          indexLabel: optionLabels[index],
-                          text: option.optionText,
-                          isSelected: selected,
-                          isCorrect: isCorrect,
-                          isIncorrect: isIncorrect,
-                          isDisabled: provider.isAnswered,
-                          onTap: () => provider.selectOption(index),
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: _NeoOptionCard(
+                            indexLabel: optionLabels[index],
+                            text: option.optionText,
+                            isSelected: selected,
+                            isCorrect: isCorrect,
+                            isIncorrect: isIncorrect,
+                            isDisabled: provider.isAnswered,
+                            onTap: () => provider.selectOption(index),
+                          ),
                         );
                       }),
-                      const SizedBox(height: 8),
-                      AnimatedBuilder(
-                        animation: _pulseController,
-                        builder: (context, child) {
-                          final isEnabled = provider.selectedOptionIndex != null &&
-                              !provider.isAnswered;
-                          final pulseValue = Curves.easeInOutSine
-                              .transform(_pulseController.value);
-                          return Container(
-                            decoration: BoxDecoration(
-                              boxShadow: isEnabled
-                                  ? [
-                                      BoxShadow(
-                                        color: AppTheme.duoGreen
-                                            .withValues(alpha: 0.4),
-                                        offset: const Offset(0, 4),
-                                        blurRadius: 8 + (4 * pulseValue),
-                                      ),
-                                    ]
-                                  : [AppTheme.shadowDown],
-                              ),
-                            child: SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                key: const ValueKey('submit-answer'),
-                                onPressed: provider.selectedOptionIndex == null ||
-                                        provider.isAnswered
-                                    ? null
-                                    : provider.submitAnswer,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: provider.selectedOptionIndex ==
-                                          null
-                                      ? AppTheme.borderGray
-                                      : AppTheme.duoGreen,
-                                  foregroundColor: Colors.white,
-                                  elevation: 0,
-                                ),
-                                child: Text(
-                                    provider.isAnswered ? '已提交' : '提交答案'),
-                              ),
-                            ),
-                          );
-                        },
+
+                      const SizedBox(height: 16),
+
+                      // 提交按钮
+                      NeoTextButton(
+                        text: provider.isAnswered ? '已提交' : '提交答案',
+                        onPressed: provider.selectedOptionIndex == null ||
+                                provider.isAnswered
+                            ? null
+                            : provider.submitAnswer,
+                        type: NeoButtonType.primary,
+                        size: NeoButtonSize.large,
                       ),
-                      const SizedBox(height: 12),
+
+                      const SizedBox(height: 16),
+
+                      // 反馈面板
                       AnimatedSwitcher(
-                        duration: AppTheme.durationPanel,
+                        duration: const Duration(milliseconds: 300),
                         switchInCurve: Curves.easeOutBack,
                         switchOutCurve: Curves.easeIn,
                         transitionBuilder: (child, animation) {
@@ -210,6 +195,126 @@ class _QuestionPageState extends State<QuestionPage>
             },
           );
         },
+      ),
+    );
+  }
+}
+
+/// Neo 风格选项卡片
+class _NeoOptionCard extends StatefulWidget {
+  const _NeoOptionCard({
+    required this.indexLabel,
+    required this.text,
+    this.isSelected = false,
+    this.isCorrect = false,
+    this.isIncorrect = false,
+    this.isDisabled = false,
+    this.onTap,
+  });
+
+  final String indexLabel;
+  final String text;
+  final bool isSelected;
+  final bool isCorrect;
+  final bool isIncorrect;
+  final bool isDisabled;
+  final VoidCallback? onTap;
+
+  @override
+  State<_NeoOptionCard> createState() => _NeoOptionCardState();
+}
+
+class _NeoOptionCardState extends State<_NeoOptionCard> {
+  bool _isPressed = false;
+
+  Color get _backgroundColor {
+    if (widget.isCorrect) return const Color(0xFFE9F7DD);
+    if (widget.isIncorrect) return const Color(0xFFFFE6E6);
+    if (widget.isSelected) return const Color(0xFFE8F5FE);
+    return NeoBrutalTheme.surface;
+  }
+
+  Color get _borderColor {
+    if (widget.isCorrect) return NeoBrutalTheme.primary;
+    if (widget.isIncorrect) return NeoBrutalTheme.error;
+    if (widget.isSelected) return NeoBrutalTheme.secondary;
+    return NeoBrutalTheme.charcoal;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isInteractive = !widget.isDisabled && widget.onTap != null;
+
+    return GestureDetector(
+      onTap: widget.onTap,
+      onTapDown: isInteractive
+          ? (_) {
+              HapticFeedback.lightImpact();
+              setState(() => _isPressed = true);
+            }
+          : null,
+      onTapUp: isInteractive ? (_) => setState(() => _isPressed = false) : null,
+      onTapCancel:
+          isInteractive ? () => setState(() => _isPressed = false) : null,
+      child: AnimatedContainer(
+        duration: NeoBrutalTheme.durationPress,
+        curve: NeoBrutalTheme.curvePress,
+        transform: Matrix4.translationValues(
+          _isPressed ? 4 : 0,
+          _isPressed ? 4 : 0,
+          0,
+        ),
+        decoration: BoxDecoration(
+          color: _backgroundColor,
+          borderRadius: BorderRadius.circular(NeoBrutalTheme.radiusSm),
+          border: Border.all(
+            color: _borderColor,
+            width: NeoBrutalTheme.borderWidth,
+          ),
+          boxShadow: _isPressed
+              ? NeoBrutalTheme.shadowPressed
+              : NeoBrutalTheme.shadowMd,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: _borderColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(NeoBrutalTheme.radiusXxs),
+                  border: Border.all(
+                    color: _borderColor,
+                    width: 2,
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    widget.indexLabel,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: _borderColor,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  widget.text,
+                  style: NeoBrutalTheme.styleBodyLarge,
+                ),
+              ),
+              if (widget.isCorrect)
+                const Icon(Icons.check_circle, color: NeoBrutalTheme.primary)
+              else if (widget.isIncorrect)
+                const Icon(Icons.cancel, color: NeoBrutalTheme.error),
+            ],
+          ),
+        ),
       ),
     );
   }

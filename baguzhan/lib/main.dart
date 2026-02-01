@@ -4,8 +4,12 @@ import 'package:provider/provider.dart';
 import 'core/theme/app_theme.dart';
 import 'data/repositories/api_question_repository.dart';
 import 'data/repositories/user_progress_repository.dart';
+import 'presentation/pages/achievement_gallery_page.dart';
+import 'presentation/pages/celebration_page.dart';
 import 'presentation/pages/home_page.dart';
 import 'presentation/pages/learning_report_page.dart';
+import 'presentation/pages/neo_components_showcase_page.dart';
+import 'presentation/pages/progress_dashboard_page.dart';
 import 'presentation/pages/question_page.dart';
 import 'presentation/pages/result_page.dart';
 import 'presentation/pages/wrong_book_page.dart';
@@ -59,6 +63,18 @@ class BaguzhanApp extends StatelessWidget {
             return DuoPageTransition(
               child: const LearningReportPage(),
             );
+          }
+          if (settings.name == '/dashboard') {
+            return DuoPageTransition(child: const ProgressDashboardPage());
+          }
+          if (settings.name == '/achievements') {
+            return DuoPageTransition(child: const AchievementGalleryPage());
+          }
+          if (settings.name == '/celebration') {
+            return DuoPageTransition(child: const CelebrationPage());
+          }
+          if (settings.name == '/components-showcase') {
+            return DuoPageTransition(child: const NeoComponentsShowcasePage());
           }
           return DuoPageTransition(child: const HomePage());
         },
